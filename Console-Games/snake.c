@@ -59,7 +59,7 @@ int snake[MAX_SIZE][MAX_SIZE]; // Game Board
 int score = 0, hitapple = 0, gameover = 0;
 char k = LEFT, lastmove = LEFT;
 
-int IncreaseNumbers()
+void IncreaseNumbers()
 {
 	for (i = 0; i < table_limits[0]; i++)
 	{
@@ -209,38 +209,38 @@ void DrawBoard(HANDLE h, WORD wOldColorAttrs)
 	SetConsoleTextAttribute(h, wOldColorAttrs);
 }
 
-int main(int argc, char* argv[])
+int main(int argc, char *argv[])
 {
 	if (argc < 2)
 	{
 		printf("You need to start the game with parameter(s)!\n\nCopright %c fatpound (2022)", 184);
 
-		getch();
-		exit(1);
+		_getch();
+		exit(EXIT_FAILURE);
 	}
 
 	if (argc > 3)
 	{
 		printf("Too many parameters!\n\nCopright %c fatpound (2022)", 184);
 
-		getch();
-		exit(1);
+		_getch();
+		exit(EXIT_FAILURE);
 	}
 
 	if (!atoi(argv[1]) || (argc == 3 && !atoi(argv[2])))
 	{
 		printf("Syntax error on %s parameter%s!\n\nCopright %c fatpound (2022)", !atoi(argv[1]) && (argc == 3 && !atoi(argv[2])) ? "both" : (!atoi(argv[1]) ? "1st" : "2nd"), !atoi(argv[1]) && (argc == 3 && !atoi(argv[2])) ? "s" : "", 184);
 
-		getch();
-		exit(1);
+		_getch();
+		exit(EXIT_FAILURE);
 	}
 
 	if ((atoi(argv[1]) * (argc == 2 ? atoi(argv[1]) : atoi(argv[2]))) < 3)
 	{
 		printf("So tiny board!\n\nCopright %c fatpound (2022)", 184);
 
-		getch();
-		exit(1);
+		_getch();
+		exit(EXIT_FAILURE);
 	}
 
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
@@ -280,12 +280,12 @@ int main(int argc, char* argv[])
 	// Game Loop
 	while (!gameover && k != WIN)
 	{
-		k = getch();
+		k = _getch();
 		LowerTheCase();
 
 		while ((k == LEFT && lastmove == RIGHT) || (k == RIGHT && lastmove == LEFT) || (k == UP && lastmove == DOWN) || (k == DOWN && lastmove == UP))
 		{
-			k = getch();
+			k = _getch();
 			LowerTheCase();
 		}
 

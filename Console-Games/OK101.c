@@ -12,7 +12,7 @@
 /*   By: fatpound                                       ###   ########.tr      */
 /*                                                                             */
 /*   Created: 10/03/2022 13:00:11 by fatpound with yunnsbz                     */
-/*   Updated: 31/12/2022 13:52:10 by fatpound                                  */
+/*   Updated: 01/01/2023 12:32:22 by fatpound                                  */
 /*                                                                             */
 /*******************************************************************************/
 
@@ -23,7 +23,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <windows.h>
-#include <string.h>
+// #include <string.h>
 
 #include "definer.h"
 #include "textlib.h"
@@ -33,22 +33,22 @@ unsigned int zaman;
 int i, j, k, m, t, rg[5], d_index[4];
 
 int zerocount = 0,
-started = 0,
-score = 0,
-sayac = 0,
-escape = 0,
-gameover = 0;
+      started = 0,
+        score = 0,
+        sayac = 0,
+       escape = 0,
+     gameover = 0;
 
 int    s1[22] = { 0 },
-s2[22] = { 0 },
-move1[22] = { 0 },
-move2[22] = { 0 };
+       s2[22] = { 0 },
+    move1[22] = { 0 },
+    move2[22] = { 0 };
 
 int   pc[2][11][3][2],
-pc_y[2][11][3][2],
-board[2][11][2],
-board_y[2][11][2],
-taslar[8][13][2],
+    pc_y[2][11][3][2],
+   board[2][11][2],
+ board_y[2][11][2],
+  taslar[8][13][2],
 taslar_y[8][13][2];
 
 char a, c, d, e, y, z, option = ENTER, file_w, file_r, name[MAX_NAME_LEN];
@@ -686,7 +686,7 @@ void SaveScore(HANDLE h, WORD wOldColorAttrs)
     (SetConsoleTextAttribute(h, A_YESIL), printf("H]   "));
     (SetConsoleTextAttribute(h, wOldColorAttrs), printf("> "));
 
-    while ((file_w = _getch()) != 'E' && file_w != 'H' && file_w != 'e' && file_w != 'h');
+    while ((file_w = __getch()) != 'E' && file_w != 'H' && file_w != 'e' && file_w != 'h');
 
     SetConsoleTextAttribute(h, (file_w == 'E' || file_w == 'e') ? A_YESIL : A_KIRMIZI);
     printf("%c", file_w);
@@ -727,7 +727,7 @@ int main()
     {
         DrawMenu(h, wOldColorAttrs);
 
-        while ((option = _getch()) == ESC ? 0 : ((started ? (option != 'f') : 1) && option != ENTER && option != 's' && option != 'h'));
+        while ((option = __getch()) == ESC ? 0 : ((started ? (option != 'f') : 1) && option != ENTER && option != 's' && option != 'h'));
 
         if (option == ESC)
         {
@@ -766,7 +766,7 @@ int main()
                 fclose(skord);
             }
 
-            _getch();
+            __getch();
             continue;
         }
 
@@ -786,7 +786,7 @@ int main()
             alt_cerceve1;
             printf("\nDevam etmek icin bir tusa basiniz...");
 
-            _getch();
+            __getch();
             continue;
         }
 
@@ -798,7 +798,7 @@ int main()
             DrawBoard(h, wOldColorAttrs);
 
             // Menuye geri donus bekleme dongusu
-            while ((d = _getch()) != ESC);
+            while ((d = __getch()) != ESC);
 
             DrawMenu(h, wOldColorAttrs);
         }
@@ -837,7 +837,7 @@ int main()
             {
                 if (!started) started = 1;
 
-                while ((c = _getch()) != 'o' && c != 'c' && c != 's' && c != 't' && c != 'z' && c != 'k' && c != 'd' && c != '0' && c != '1' && c != '2' && c != '3' && c != 'p' && c != ESC);
+                while ((c = __getch()) != 'o' && c != 'c' && c != 's' && c != 't' && c != 'z' && c != 'k' && c != 'd' && c != '0' && c != '1' && c != '2' && c != '3' && c != 'p' && c != ESC);
 
                 if (c != 'p' && c != ESC)
                 {
@@ -850,7 +850,7 @@ int main()
                         {
                             DrawThrow(h, wOldColorAttrs);
 
-                            while ((a = _getch()) != 'w' && a != 'a' && a != 's' && a != 'd' && a != 13);
+                            while ((a = __getch()) != 'w' && a != 'a' && a != 's' && a != 'd' && a != 13);
 
                             if (a != 13 && ((a == 'w' && m > 10) || (a == 'a' && m > 0) || (a == 's' && m < 11) || (a == 'd' && m < 21)))
                             {
@@ -896,7 +896,7 @@ int main()
                 {
                     PauseMenu(h, wOldColorAttrs);
 
-                    while ((z = _getch()) != 'a' && z != 27 && z != 'r');
+                    while ((z = __getch()) != 'a' && z != 27 && z != 'r');
 
                     if (z == 97) break;
                     if (z == ESC || z == 'r')
@@ -904,7 +904,7 @@ int main()
                         PauseMenu(h, wOldColorAttrs);
                         Eminlik(h, wOldColorAttrs, score);
 
-                        while ((y = _getch()) != 'E' && y != 'H');
+                        while ((y = __getch()) != 'E' && y != 'H');
 
                         SetConsoleTextAttribute(h, (y == 'E' || y == 'e') ? A_YESIL : A_KIRMIZI);
                         printf("%c", y);
@@ -948,5 +948,5 @@ int main()
     SetConsoleTextAttribute(h, wOldColorAttrs);
     printf(IMZA);
 
-    return !_getch();
+    return !__getch();
 }
