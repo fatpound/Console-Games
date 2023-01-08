@@ -24,6 +24,7 @@
 #include <conio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 #include <windows.h>
 
 #define SWAP(x, y) (x == y ? 0 : (x ^= y ^= x ^= y))
@@ -69,6 +70,7 @@ char* error_codes[] =
 int head[2];
 int tail[2];
 int apple[2];
+
 int limits[2];
 
 int** board = NULL;
@@ -77,8 +79,8 @@ int score = 0;
 int hitapple = 0;
 int gameover = 0;
 
-char k = LEFT;
-char lastmove = LEFT;
+char k = RIGHT;
+char lastmove = RIGHT;
 
 void IncreaseNumbers()
 {
@@ -91,14 +93,6 @@ void IncreaseNumbers()
                 board[i][j]++;
             }
         }
-    }
-}
-
-void LowerTheCase()
-{
-    if (k == UP - 32 || k == DOWN - 32 || k == LEFT - 32 || k == RIGHT - 32)
-    {
-        k += 32;
     }
 }
 
@@ -129,7 +123,10 @@ void TailLocation()
         {
             if (board[i][j] > greatest)
             {
-                greatest = board[tail[0] = i][tail[1] = j];
+                tail[0] = i;
+                tail[1] = j;
+
+                greatest = board[i][j];
             }
         }
     }
@@ -316,6 +313,7 @@ int main(int argc, char** argv)
     limits[0] = atoi(argv[1])               > MAX_SIZE ? MAX_SIZE : atoi(argv[1]);
     limits[1] = atoi(argv[1 + (argc == 3)]) > MAX_SIZE ? MAX_SIZE : atoi(argv[1 + (argc == 3)]);
 
+    // Allocating memory for the game board
     board = (int**) malloc(sizeof(int*) * limits[0]);
 
     if (board == NULL)
@@ -341,7 +339,7 @@ int main(int argc, char** argv)
         }
     }
 
-    // Board preparation
+    // Resetting board
     for (int i = 0; i < limits[0]; i++)
     {
         for (int j = 0; j < limits[1]; j++)
@@ -351,10 +349,10 @@ int main(int argc, char** argv)
     }
 
     // Placing snake's head 'X'
-    board[0][0] = 1;
+    board[0][1] = 1;
 
     // Placing snake's first 'O'
-    board[0][1] = 2;
+    board[0][0] = 2;
 
     unsigned int tim = (unsigned int) time(0);
     
@@ -363,13 +361,12 @@ int main(int argc, char** argv)
     PlaceApple();
     DrawBoard(h, wOldColorAttrs);
 
-    // Game Loop
+    // Game loop
     do
     {
         do
         {
-            k = _getch();
-            LowerTheCase();
+            k = tolower((int)_getch());
         }
         while ((k == LEFT && lastmove == RIGHT) || (k == RIGHT && lastmove == LEFT) || (k == UP && lastmove == DOWN) || (k == DOWN && lastmove == UP));
 
