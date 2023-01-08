@@ -12,9 +12,13 @@
 /*   By: fatpound                                                              */
 /*                                                                             */
 /*   Created: 19/02/2022 00:17:19 by fatpound                                  */
-/*   Updated: 04/12/2022 13:49:51 by fatpound with unsignedbuntu               */
+/*   Updated: 08/01/2023 13:57:46 by fatpound                                  */
 /*                                                                             */
 /*******************************************************************************/
+
+#pragma warning(disable:6031)
+#pragma warning(disable:6385)
+#pragma warning(disable:6386)
 
 #include <stdio.h>
 #include <conio.h>
@@ -32,7 +36,7 @@
 #define WIN   'n'
 #define END   0x1b // ESC (Terminate)
 
-#define MAX_SIZE 15
+#define MAX_SIZE   15
 
 #define RED        4
 #define BLUE       1
@@ -50,262 +54,343 @@
 
 #define SET_COLOR(x) (SetConsoleTextAttribute(h, x))
 
-int i, j, temp[2];
+char* credits       = "\nProgrammed by fatpound (2022-2023)\n";
+char* error_codes[] =
+{
+    "You need to start the game with parameter(s)!\n", // 0x0
+    "Too many parameters!\n",                          // 0x1
+    "Syntax error on 1st parameter!\n",                // 0x2
+    "Syntax error on 2nd parameter!\n",                // 0x3
+    "Syntax error on both parameters!\n",              // 0x4
+    "Board is too small!\n",                           // 0x5
+    "Out of memory!\n"                                 // 0x6
+};
 
-int tail[2], head[2];
-int table_limits[2];
-int snake[MAX_SIZE][MAX_SIZE]; // Game Board
+int head[2];
+int tail[2];
+int apple[2];
+int limits[2];
 
-int score = 0, hitapple = 0, gameover = 0;
-char k = LEFT, lastmove = LEFT;
+int** board = NULL;
+
+int score = 0;
+int hitapple = 0;
+int gameover = 0;
+
+char k = LEFT;
+char lastmove = LEFT;
 
 void IncreaseNumbers()
 {
-	for (i = 0; i < table_limits[0]; i++)
-	{
-		for (j = 0; j < table_limits[1]; j++)
-		{
-			if (snake[i][j] > 1)
-			{
-				snake[i][j]++;
-			}
-		}
-	}
+    for (int i = 0; i < limits[0]; i++)
+    {
+        for (int j = 0; j < limits[1]; j++)
+        {
+            if (board[i][j] > 1)
+            {
+                board[i][j]++;
+            }
+        }
+    }
 }
 
 void LowerTheCase()
 {
-	if (k == UP - 32 || k == DOWN - 32 || k == LEFT - 32 || k == RIGHT - 32)
-	{
-		k += 32;
-	}
+    if (k == UP - 32 || k == DOWN - 32 || k == LEFT - 32 || k == RIGHT - 32)
+    {
+        k += 32;
+    }
 }
 
 void HeadLocation()
 {
-	for (i = 0; i < table_limits[0]; i++)
-	{
-		for (j = 0; j < table_limits[1]; j++)
-		{
-			if (snake[i][j] == 1)
-			{
-				head[0] = i;
-				head[1] = j;
+    for (int i = 0; i < limits[0]; i++)
+    {
+        for (int j = 0; j < limits[1]; j++)
+        {
+            if (board[i][j] == 1)
+            {
+                head[0] = i;
+                head[1] = j;
 
-				return;
-			}
-		}
-	}
+                return;
+            }
+        }
+    }
 }
 
 void TailLocation()
 {
-	int greatest = 0;
+    int greatest = 0;
 
-	for (i = 0; i < table_limits[0]; i++)
-	{
-		for (j = 0; j < table_limits[1]; j++)
-		{
-			if (snake[i][j] > greatest)
-			{
-				greatest = snake[tail[0] = i][tail[1] = j];
-			}
-		}
-	}
+    for (int i = 0; i < limits[0]; i++)
+    {
+        for (int j = 0; j < limits[1]; j++)
+        {
+            if (board[i][j] > greatest)
+            {
+                greatest = board[tail[0] = i][tail[1] = j];
+            }
+        }
+    }
 }
 
 void PlaceApple()
 {
-	while (snake[temp[0]][temp[1]] > 0)
-	{
-		temp[0] = rand() % table_limits[0];
-		temp[1] = rand() % table_limits[1];
-	}
+    do
+    {
+        apple[0] = rand() % limits[0];
+        apple[1] = rand() % limits[1];
+    }
+    while (board[apple[0]][apple[1]] > 0);
 
-	snake[temp[0]][temp[1]] = -1;
+    board[apple[0]][apple[1]] = -1;
 }
 
 void SwapHead()
 {
-	if (k == UP)    SWAP(snake[head[0]][head[1]], snake[(head[0] == 0 ? table_limits[0] : head[0]) - 1][head[1]]);
-	if (k == DOWN)  SWAP(snake[head[0]][head[1]], snake[head[0] == table_limits[0] - 1 ? 0 : (head[0] + 1)][head[1]]);
-	if (k == LEFT)  SWAP(snake[head[0]][head[1]], snake[head[0]][(head[1] == 0 ? table_limits[1] : head[1]) - 1]);
-	if (k == RIGHT) SWAP(snake[head[0]][head[1]], snake[head[0]][head[1] == table_limits[1] - 1 ? 0 : (head[1] + 1)]);
+    switch (k)
+    {
+        case UP:    {SWAP(board[head[0]][head[1]], board[head[0] == 0 ? limits[0] - 1 : head[0] - 1][head[1]]); break;}
+        case DOWN:  {SWAP(board[head[0]][head[1]], board[head[0] == limits[0] - 1 ? 0 : head[0] + 1][head[1]]); break;}
+        case LEFT:  {SWAP(board[head[0]][head[1]], board[head[0]][head[1] == 0 ? limits[1] - 1 : head[1] - 1]); break;}
+        case RIGHT: {SWAP(board[head[0]][head[1]], board[head[0]][head[1] == limits[1] - 1 ? 0 : head[1] + 1]); break;}
+        default: break;
+    }
 }
 
 void MoveBoard()
 {
-	if ((k == UP && snake[head[0] - 1][head[1]] == -1) || (k == DOWN && snake[head[0] + 1][head[1]] == -1) || (k == LEFT && snake[head[0]][head[1] - 1] == -1) || (k == RIGHT && snake[head[0]][head[1] + 1] == -1))
-	{
-		hitapple = 1;
-	}
+    if ((k == UP    && board[(head[0] - 1 + limits[0]) % limits[0]][head[1]] == -1) ||
+        (k == DOWN  && board[(head[0] + 1)             % limits[0]][head[1]] == -1) ||
+        (k == LEFT  && board[head[0]][(head[1] - 1 + limits[1]) % limits[1]] == -1) ||
+        (k == RIGHT && board[head[0]][(head[1] + 1)             % limits[1]] == -1))
+    {
+        hitapple = 1;
 
-	if (hitapple)
-	{
-		score++;
+        score++;
 
-		snake[temp[0]][temp[1]] = 1;
-		snake[head[0]][head[1]] = 0;
+        board[apple[0]][apple[1]] = 1;
+        board[head[0]][head[1]] = 0;
 
-		IncreaseNumbers();
+        IncreaseNumbers();
 
-		snake[head[0]][head[1]] = 2;
+        board[head[0]][head[1]] = 2;
 
-		if (score != (table_limits[0] * table_limits[1] - 2))
-		{
-			PlaceApple();
-		}
-		else
-		{
-			k = WIN;
-		}
+        if (score != (limits[0] * limits[1] - 2))
+        {
+            PlaceApple();
+        }
+        else
+        {
+            k = WIN;
+        }
 
-		hitapple = !hitapple;
-	}
-	else
-	{
-		SwapHead();
-		TailLocation();
-		IncreaseNumbers();
+        hitapple = !hitapple;
 
-		snake[head[0]][head[1]] = 2;
-		snake[tail[0]][tail[1]] = 0;
-	}
+        return;
+    }
+
+    SwapHead();
+    TailLocation();
+    IncreaseNumbers();
+
+    board[head[0]][head[1]] = 2;
+    board[tail[0]][tail[1]] = 0;
 }
 
 void BoardLogic()
 {
-	HeadLocation();
+    HeadLocation();
 
-	if ((k == UP && (head[0] > 0) && snake[head[0] - 1][head[1]] > 1) || (k == DOWN && (head[0] < table_limits[0] - 1) && snake[head[0] + 1][head[1]] > 1) || (k == LEFT && (head[1] > 0) && snake[head[0]][head[1] - 1] > 1) || (k == RIGHT && (head[1] < table_limits[1] - 1) && snake[head[0]][head[1] + 1] > 1))
-	{
-		gameover = 1;
-	}
+    if ((k == UP    && board[(head[0] - 1 + limits[0]) % limits[0]][head[1]] > 1) ||
+        (k == DOWN  && board[(head[0] + 1)             % limits[0]][head[1]] > 1) ||
+        (k == LEFT  && board[head[0]][(head[1] - 1 + limits[1]) % limits[1]] > 1) ||
+        (k == RIGHT && board[head[0]][(head[1] + 1)             % limits[1]] > 1))
+    {
+        gameover = TRUE;
+        return;
+    }
 
-	if (!gameover)
-	{
-		MoveBoard();
-	}
+    MoveBoard();
 }
 
 void DrawBoard(HANDLE h, WORD wOldColorAttrs)
 {
-	if (!gameover && k != END)
-	{
-		for (system("CLS"), i = 0; i < table_limits[0] + 2; i++)
-		{
-			for (j = 0; j < table_limits[1] + 2; j++)
-			{
-				SetConsoleTextAttribute(h, (snake[i - 1][j - 1] == 1) ? 1 : ((snake[i - 1][j - 1]) ? (((snake[i - 1][j - 1]) == -1) ? 11 : wOldColorAttrs) : 1));
+    if (gameover == 1 || k == END)
+        return;
 
-				printf("%c%s", (i == 0 || j == 0 || i == table_limits[0] + 1 || j == table_limits[1] + 1) ? (SET_COLOR(4), '#') : (snake[i - 1][j - 1] == 1 ? 'X' : (snake[i - 1][j - 1] ? (snake[i - 1][j - 1] == -1 ? 42 : 'O') : 32)), j == table_limits[1] + 1 ? "\n" : "");
-			}
-		}
+    system("CLS");
 
-		SET_COLOR(GREEN);
-		printf("\nSCORE : %d", score);
-	}
+    for (int i = 0; i < limits[0] + 2; i++)
+    {
+        for (int j = 0; j < limits[1] + 2; j++)
+        {
+            if (i == 0 || j == 0 || i == limits[0] + 1 || j == limits[1] + 1)
+            {
+                printf("#");
+            }
+            else
+            {
+                switch (board[i - 1][j - 1])
+                {
+                    case -1:
+                    {
+                        printf("*");
+                        break;
+                    }
 
-	SetConsoleTextAttribute(h, wOldColorAttrs);
+                    case 0:
+                    {
+                        printf(" ");
+                        break;
+                    }
+
+                    case 1:
+                    {
+                        printf("X");
+                        break;
+                    }
+
+                    default:
+                    {
+                        printf("O");
+                        break;
+                    }
+                }
+            }
+        }
+
+        printf("\n");
+    }
+
+    SET_COLOR(GREEN);
+    printf("\nScore : %d", score);
+    SET_COLOR(wOldColorAttrs);
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char** argv)
 {
-	if (argc < 2)
-	{
-		printf("You need to start the game with parameter(s)!\n\nCopright %c fatpound (2022)", 184);
+    if (argc == 1 || argc > 3)
+    {
+        printf(error_codes[argc == 1 ? 0x0 : 0x1]);
+        printf(credits);
 
-		_getch();
-		exit(EXIT_FAILURE);
-	}
+        _getch();
+        exit(argc == 1 ? 0x0 : 0x1);
+    }
 
-	if (argc > 3)
-	{
-		printf("Too many parameters!\n\nCopright %c fatpound (2022)", 184);
+    if (argc == 2 && atoi(argv[1]) == FALSE)
+    {
+        printf(error_codes[0x2]);
+        printf(credits);
 
-		_getch();
-		exit(EXIT_FAILURE);
-	}
+        _getch();
+        exit(0x2);
+    }
 
-	if (!atoi(argv[1]) || (argc == 3 && !atoi(argv[2])))
-	{
-		printf("Syntax error on %s parameter%s!\n\nCopright %c fatpound (2022)", !atoi(argv[1]) && (argc == 3 && !atoi(argv[2])) ? "both" : (!atoi(argv[1]) ? "1st" : "2nd"), !atoi(argv[1]) && (argc == 3 && !atoi(argv[2])) ? "s" : "", 184);
+    if (argc == 3 && atoi(argv[2]) == FALSE)
+    {
+        printf(error_codes[atoi(argv[1]) == FALSE ? 0x4 : 0x3]);
+        printf(credits);
 
-		_getch();
-		exit(EXIT_FAILURE);
-	}
+        _getch();
+        exit(atoi(argv[1]) == FALSE ? 0x4 : 0x3);
+    }
 
-	if ((atoi(argv[1]) * (argc == 2 ? atoi(argv[1]) : atoi(argv[2]))) < 3)
-	{
-		printf("So tiny board!\n\nCopright %c fatpound (2022)", 184);
+    if (atoi(argv[1]) < 2 || atoi(argv[1 + (argc == 3)]) < 2)
+    {
+        printf(error_codes[0x5]);
+        printf(credits);
 
-		_getch();
-		exit(EXIT_FAILURE);
-	}
+        _getch();
+        exit(0x5);
+    }
 
-	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-	CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
-	GetConsoleScreenBufferInfo(h, &csbiInfo);
-	WORD wOldColorAttrs = csbiInfo.wAttributes;
+    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
+    GetConsoleScreenBufferInfo(h, &csbiInfo);
+    WORD wOldColorAttrs = csbiInfo.wAttributes;
+    
+    // Setting board limits
+    limits[0] = atoi(argv[1])               > MAX_SIZE ? MAX_SIZE : atoi(argv[1]);
+    limits[1] = atoi(argv[1 + (argc == 3)]) > MAX_SIZE ? MAX_SIZE : atoi(argv[1 + (argc == 3)]);
 
-	// Setting board limits
-	table_limits[0] = atoi(argv[1]) > MAX_SIZE ? MAX_SIZE : atoi(argv[1]);
-	table_limits[1] = atoi(argv[argc == 2 ? 1 : 2]) > MAX_SIZE ? MAX_SIZE : atoi(argv[argc == 2 ? 1 : 2]);
+    board = (int**) malloc(sizeof(int*) * limits[0]);
 
-	// Board preparation
-	for (i = 0; i < table_limits[0]; i++)
-	{
-		for (j = 0; j < table_limits[1]; j++)
-		{
-			snake[i][j] = 0;
-		}
-	}
+    if (board == NULL)
+    {
+        printf(error_codes[0x6]);
+        printf(credits);
 
-	// Placing snake's head  'X'
-	snake[table_limits[1] == 1][table_limits[1] - 1 - (table_limits[1] != 1)] = 1;
+        _getch();
+        exit(0x6);
+    }
 
-	// Placing snake's first 'O'
-	snake[0][table_limits[1] - 1] = 2;
+    for (int i = 0; i < limits[0]; i++)
+    {
+        board[i] = (int*) malloc(sizeof(int) * limits[1]);
 
-	unsigned int tim = time(NULL);
+        if (board[i] == NULL)
+        {
+            printf(error_codes[0x6]);
+            printf(credits);
 
-	srand(tim);
+            _getch();
+            exit(0x6);
+        }
+    }
 
-	temp[0] = rand() % table_limits[0];
-	temp[1] = rand() % table_limits[1];
+    // Board preparation
+    for (int i = 0; i < limits[0]; i++)
+    {
+        for (int j = 0; j < limits[1]; j++)
+        {
+            board[i][j] = 0;
+        }
+    }
 
-	PlaceApple();
-	DrawBoard(h, wOldColorAttrs);
+    // Placing snake's head 'X'
+    board[0][0] = 1;
 
-	// Game Loop
-	while (!gameover && k != WIN)
-	{
-		k = _getch();
-		LowerTheCase();
+    // Placing snake's first 'O'
+    board[0][1] = 2;
 
-		while ((k == LEFT && lastmove == RIGHT) || (k == RIGHT && lastmove == LEFT) || (k == UP && lastmove == DOWN) || (k == DOWN && lastmove == UP))
-		{
-			k = _getch();
-			LowerTheCase();
-		}
+    unsigned int tim = (unsigned int) time(0);
+    
+    srand(tim);
 
-		if (k == END)
-		{
-			DrawBoard(h, wOldColorAttrs);
-			break;
-		}
+    PlaceApple();
+    DrawBoard(h, wOldColorAttrs);
 
-		lastmove = k;
+    // Game Loop
+    do
+    {
+        do
+        {
+            k = _getch();
+            LowerTheCase();
+        }
+        while ((k == LEFT && lastmove == RIGHT) || (k == RIGHT && lastmove == LEFT) || (k == UP && lastmove == DOWN) || (k == DOWN && lastmove == UP));
 
-		if (k == UP || k == DOWN || k == LEFT || k == RIGHT)
-		{
-			BoardLogic();
-			DrawBoard(h, wOldColorAttrs);
-		}
-	}
+        if (k == END)
+        {
+            DrawBoard(h, wOldColorAttrs);
+            break;
+        }
 
-	printf("\n\nGame %s!\n\nCopyright %c fatpound (2022)", k == END ? "Terminated" : (k == WIN ? "Ended" : "Over"), 184);
-	// printf("\nSeed : %u", tim);
+        lastmove = k;
 
-	return !_getch();
+        if (k == UP || k == DOWN || k == LEFT || k == RIGHT)
+        {
+            BoardLogic();
+            DrawBoard(h, wOldColorAttrs);
+        }
+    }
+    while (!gameover && k != WIN);
+
+    printf("\n\nGame %s!%s", k == END ? "Terminated" : (k == WIN ? "Ended" : "Over"), credits);
+    // printf("\nSeed : %llu", tim);
+
+    return !_getch();
 }
