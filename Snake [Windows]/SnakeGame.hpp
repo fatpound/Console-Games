@@ -38,7 +38,7 @@ public:
         {
             do
             {
-                move_ = tolower((int)_getch());
+                move_ = std::tolower(static_cast<int>(_getch()));
             }
             while ((move_ == left_ && lastmove_ == right_) || (move_ == right_ && lastmove_ == left_) || (move_ == up_ && lastmove_ == down_) || (move_ == down_ && lastmove_ == up_));
 
@@ -69,13 +69,13 @@ protected:
 
 
 private:
-    struct Pos
+    struct Pos final
     {
         int x;
         int y;
     };
 
-    class Board
+    class Board final
     {
         friend class SnakeGame;
 
@@ -340,5 +340,5 @@ private:
         "Board_ is too small!\n",                           // 0x5
         "Out of memory!\n"                                 // 0x6
     };
-    static constexpr const char* const credits_ = "Programmed by fatpound (2022-2023)";
+    static constexpr const char* const credits_ = "Programmed by fatpound (2022-2024)";
 };
