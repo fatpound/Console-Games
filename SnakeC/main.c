@@ -13,6 +13,7 @@
 /*                                                                             */
 /*   Created: 19/02/2022 00:17:19 by fatpound                                  */
 /*   Updated: 08/01/2023 13:57:46 by fatpound                                  */
+/*   Updated: 22/01/2025 20:20:50 by fatpound                                  */
 /*                                                                             */
 /*******************************************************************************/
 
@@ -55,7 +56,7 @@
 
 #define SET_COLOR(x) (SetConsoleTextAttribute(h, x))
 
-char* credits       = "\nProgrammed by fatpound (2022-2023)\n";
+char* credits       = "\nCopyright (c) fatpound (2022-2025)\n";
 char* error_codes[] =
 {
     "You need to start the game with parameter(s)!\n", // 0x0
